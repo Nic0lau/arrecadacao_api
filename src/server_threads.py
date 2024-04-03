@@ -141,7 +141,7 @@ log_file.write(f"({datetime.today().strftime('%Y-%m-%d %H:%M:%S')})[+] Server cr
 full_json_file.close()
 full_csv_file.close()
 
-#conns = []
+conns = []
 t1 = time.time()
 while True:
 	t2 = time.time()
