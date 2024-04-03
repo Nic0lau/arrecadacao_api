@@ -6,11 +6,11 @@ Esse programa é uma API em escrita em python que serve os dados da arrecadaçã
 
 # Uso
 
-A API consiste em três arquivos: `server.py`, `server_threads.py`, `connections.py` e `config.py`. O arquivo `config.py` só deve ser alterado para modificar configurações e constantes.
+A API consiste em três arquivos: `server_fork.py`, `server_threads.py`, `connections.py` e `config.py`. O arquivo `config.py` só deve ser alterado para modificar configurações e constantes.
 
 O arquivo `client.py` foi utilizado apenas em benchmarks e é só um exemplo. Para mais detalhes acerca do padrão das requisições que devem ser enviadas à API, consulte a **[documentação](https://arrecadacaoapi.netlify.app)**.
 
-Os arquivos `server.py` e `server_threads.py` funcionam baseados em processos e threads, respectivamente. O arquivo `server_mono.py` não usa nem threads, nem processos, nem I/O assíncrono, ele responde um cliente por vez com um socket bloqueante.
+Os arquivos `server_fork.py` e `server_threads.py` funcionam baseados em processos e threads, respectivamente. O arquivo `server_mono.py` não usa nem threads, nem processos, nem I/O assíncrono, ele responde um cliente por vez com um socket bloqueante.
 
 ***Todos os programas foram propriamente testados apenas em Linux.***
 
@@ -29,7 +29,7 @@ O método de benchmark foi basicamente executar o `client.py`, redirecionar o ou
 
 Note que ***o cliente e servidor foram executados na mesma máquina*** e que ***todos os testes foram feitos em Linux*** com ***python3.12***.
 
-`server.py`:
+`server_fork.py`:
 
 | Num. | Requisição 1 | Requisição 2 | 
 |:----:|:------------:|:------------:|
