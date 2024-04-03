@@ -6,10 +6,13 @@ Esse programa é uma API em escrita em python que serve os dados da arrecadaçã
 
 # Uso
 
-A API consiste em três arquivos: `server.py`, `connections.py` e `config.py`. O arquivo que deve ser executado é o `server.py` e o que deve ser modificado em necessidade de alterar as configurações é o `config.py`. 
-
+A API consiste em três arquivos: `server.py`, `server_threads.py`, `connections.py` e `config.py`. O arquivo `config.py` só deve ser alterado para modificar configurações e constantes.
 
 O arquivo `client.py` foi utilizado apenas em benchmarks e é só um exemplo. Para mais detalhes acerca do padrão das requisições que devem ser enviadas à API, consulte a documentação.
+
+Os arquivos `server.py` e `server_threads.py` funcionam baseados em processos e threads, respectivamente. O arquivo `server_mono.py` não usa nem threads, nem processos, nem I/O assíncrono, ele responde um cliente por vez com um socket bloqueante.
+
+***Todos os programas foram propriamente testados apenas em Linux.***
 
 # Benchmarks
 
@@ -26,7 +29,24 @@ O método de benchmark foi basicamente executar o `client.py`, redirecionar o ou
 
 Note que ***o cliente e servidor foram executados na mesma máquina*** e que ***todos os testes foram feitos em Linux*** com ***python3.12***.
 
+`server.py`:
+
 | Num. | Requisição 1 | Requisição 2 | 
 |:----:|:------------:|:------------:|
 | 1000 | 0.0842269s | 0.0524373s |
 | 10000 | 0.0924639s | 0.0524949s |
+
+`server_threads.py`:
+
+| Num. | Requisição 1 | Requisição 2 |
+|:----:|:------------:|:------------:|
+| 1000 | 0.107947s | 0.0986064s |
+| 10000 | 0.106986s | 0.0989524s |
+
+
+`server_mono.py`:
+
+| Num. | Requisição 1 | Requisição 2 |
+|:----:|:------------:|:------------:|
+| 1000 | 0.125409s | 0.108773s |
+| 10000 | 0.119287s | 0.0877092s |

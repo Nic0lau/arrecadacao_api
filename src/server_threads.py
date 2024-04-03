@@ -3,9 +3,8 @@ import socket
 from datetime import datetime
 import time
 
-from multiprocessing import Process
-from multiprocessing import active_children
 from multiprocessing import cpu_count
+from threading import Thread, active_count
 
 import config # Creates constants
 import connections # Rudimentary protection agains DDoS
@@ -17,7 +16,7 @@ def parse_req(buf):
 		return -1 # 400 Bad Request
 	
 	buf = buf[0]
-	tokens = buf.replace("/", " ").replace("&", " ").split()
+	tokens = buf.replace("?", " ").replace("/", " ").replace("&", " ").split()
 	log_file.write(f'Request: {buf}\n')
 	log_file.write(f'Tokenized request: {tokens}\n')
 	if tokens[0] != "GET":
@@ -32,7 +31,7 @@ def parse_req(buf):
 		elif t.lower().find("ano") != -1:
 			ano = t[4::]
 		elif t.lower().find("mes") != -1:
-			mes = t[4::]
+			mes = t[4::].lower().title()
 		elif t.lower().find("type") != -1:
 			response_type = t[5::]
 	
@@ -92,8 +91,8 @@ def csv_to_json(header, src):
 	return response
 
 def handle_client(sock, addr):
-	recv_buf = sock.recv(2048).decode('ascii')
-	log_file.write(f"({datetime.today().strftime('%Y-%m-%d %H:%M:%S')})[+] Received request from {addr[0]}:{addr[1]}, info below:\n")
+	recv_buf = sock.recv(512).decode('ascii')
+	log_file.write(f'({datetime.today().strftime('%Y-%m-%d %H:%M:%S')})[+] Received request from {addr[0]}:{addr[1]}, info below:\n')
 	t1 = time.time()
 	req = parse_req(recv_buf)
 	log_file.write(f'Params tuple: {req}\n')
@@ -116,11 +115,11 @@ def handle_client(sock, addr):
 	try:
 		sock.sendall(data.encode('ascii'))
 	except Exception as e:
-		log_file.write(f"({datetime.today().strftime('%Y-%m-%d %H:%M:%S')})[-] Error sending mensage to {addr[0]}:{addr[1]}. {e}\n")
+		log_file.write(f'({datetime.today().strftime('%Y-%m-%d %H:%M:%S')})[-] Error sending mensage to {addr[0]}:{addr[1]}. {e}\n')
 
 	t2 = time.time()
-	
-	log_file.write(f"({datetime.today().strftime('%Y-%m-%d %H:%M:%S')})[+] Response sent, time spent: {t2 - t1}s\n")
+	sock.close()	
+	log_file.write(f'({datetime.today().strftime('%Y-%m-%d %H:%M:%S')})[+] Response sent, time spent: {t2 - t1}s\n')
 
 	return
 
@@ -142,16 +141,15 @@ log_file.write(f"({datetime.today().strftime('%Y-%m-%d %H:%M:%S')})[+] Server cr
 full_json_file.close()
 full_csv_file.close()
 
-conns = []
-
+#conns = []
 t1 = time.time()
 while True:
 	t2 = time.time()
 	if (t2 - t1) > 10: # Run every 10 seconds
 		t1 = t2
 		connections.cleanup_old_connections(conns)
-		log_file.write(f"({datetime.today().strftime('%Y-%m-%d %H:%M:%S')})[+] Cleaning up old connections...\n")
-		log_file.write(f"({datetime.today().strftime('%Y-%m-%d %H:%M:%S')})[+] Active connections: {[c.addr for c in conns]}\n")
+		log_file.write(f'({datetime.today().strftime('%Y-%m-%d %H:%M:%S')})[+] Cleaning up old connections...\n')
+		log_file.write(f'({datetime.today().strftime('%Y-%m-%d %H:%M:%S')})[+] Active connections: {[c.addr for c in conns]}\n')
 
 	client_socket, client_addr = sock.accept()
 	client_conn = connections.Connection(client_addr[0])
@@ -159,15 +157,15 @@ while True:
 	if check >= 0:
 		if check == 1:
 			conns.append(client_conn)
-		log_file.write(f"({datetime.today().strftime('%Y-%m-%d %H:%M:%S')})[+] Sucessfully connected to client {client_addr[0]}:{client_addr[1]}\n")
-		log_file.write(f"({datetime.today().strftime('%Y-%m-%d %H:%M:%S')})[+] Active connections: {[c.addr for c in conns]}\n")
-		if len(active_children()) < (cpu_count() - 1):
-			proc = Process(target=handle_client, args=(client_socket, client_addr))
-			proc.start()
+		log_file.write(f'({datetime.today().strftime('%Y-%m-%d %H:%M:%S')})[+] Sucessfully connected to client {client_addr[0]}:{client_addr[1]}\n')
+		log_file.write(f'({datetime.today().strftime('%Y-%m-%d %H:%M:%S')})[+] Active connections: {[c.addr for c in conns]}\n')
+		if active_count() < (cpu_count() - 1):
+			thread = Thread(target=handle_client, args=(client_socket, client_addr))
+			thread.start()
 		else:
 			handle_client(client_socket, client_addr)
 	else:
-		log_file.write(f"({datetime.today().strftime('%Y-%m-%d %H:%M:%S')})[-] Denied connection with client {client_addr[0]}:{client_addr[1]}\n")
+		log_file.write(f'({datetime.today().strftime('%Y-%m-%d %H:%M:%S')})[-] Denied connection with client {client_addr[0]}:{client_addr[1]}\n')
 		client_socket.sendall("HTTP/1.1 429 Too Many Requests\r\n".encode('ascii'))
-	client_socket.close()
-	log_file.write(f"({datetime.today().strftime('%Y-%m-%d %H:%M:%S')})[+] Ended connection with {client_addr[0]}:{client_addr[1]}\n")
+		client_socket.close()
+	log_file.write(f'({datetime.today().strftime('%Y-%m-%d %H:%M:%S')})[+] Ended connection with {client_addr[0]}:{client_addr[1]}\n')
