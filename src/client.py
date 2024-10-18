@@ -22,13 +22,8 @@ def send_msg():
 	return
 
 for i in range(10000):
-#while True:
 	if len(active_children()) < (cpu_count() - 1):
 		p = Process(target=send_msg, args=())
 		p.start()
 	else:
 		send_msg()
-
-#cleanBuf = buf.split('\n', 4)[4]
-#js_buf = json.loads(cleanBuf)
-#print(json.dumps(js_buf["data"][0], indent=2))

@@ -92,7 +92,7 @@ def csv_to_json(header, src):
 
 def handle_client(sock, addr):
 	recv_buf = sock.recv(512).decode('ascii')
-	log_file.write(f'({datetime.today().strftime('%Y-%m-%d %H:%M:%S')})[+] Received request from {addr[0]}:{addr[1]}, info below:\n')
+	log_file.write(f"({datetime.today().strftime('%Y-%m-%d %H:%M:%S')})[+] Received request from {addr[0]}:{addr[1]}, info below:\n")
 	t1 = time.time()
 	req = parse_req(recv_buf)
 	log_file.write(f'Params tuple: {req}\n')
@@ -115,11 +115,11 @@ def handle_client(sock, addr):
 	try:
 		sock.sendall(data.encode('ascii'))
 	except Exception as e:
-		log_file.write(f'({datetime.today().strftime('%Y-%m-%d %H:%M:%S')})[-] Error sending mensage to {addr[0]}:{addr[1]}. {e}\n')
+		log_file.write(f"({datetime.today().strftime('%Y-%m-%d %H:%M:%S')})[-] Error sending mensage to {addr[0]}:{addr[1]}. {e}\n")
 
 	t2 = time.time()
 	sock.close()	
-	log_file.write(f'({datetime.today().strftime('%Y-%m-%d %H:%M:%S')})[+] Response sent, time spent: {t2 - t1}s\n')
+	log_file.write(f"({datetime.today().strftime('%Y-%m-%d %H:%M:%S')})[+] Response sent, time spent: {t2 - t1}s\n")
 
 	return
 
@@ -148,8 +148,8 @@ while True:
 	if (t2 - t1) > 10: # Run every 10 seconds
 		t1 = t2
 		connections.cleanup_old_connections(conns)
-		log_file.write(f'({datetime.today().strftime('%Y-%m-%d %H:%M:%S')})[+] Cleaning up old connections...\n')
-		log_file.write(f'({datetime.today().strftime('%Y-%m-%d %H:%M:%S')})[+] Active connections: {[c.addr for c in conns]}\n')
+		log_file.write(f"({datetime.today().strftime('%Y-%m-%d %H:%M:%S')})[+] Cleaning up old connections...\n")
+		log_file.write(f"({datetime.today().strftime('%Y-%m-%d %H:%M:%S')})[+] Active connections: {[c.addr for c in conns]}\n")
 
 	client_socket, client_addr = sock.accept()
 	client_conn = connections.Connection(client_addr[0])
@@ -157,15 +157,15 @@ while True:
 	if check >= 0:
 		if check == 1:
 			conns.append(client_conn)
-		log_file.write(f'({datetime.today().strftime('%Y-%m-%d %H:%M:%S')})[+] Sucessfully connected to client {client_addr[0]}:{client_addr[1]}\n')
-		log_file.write(f'({datetime.today().strftime('%Y-%m-%d %H:%M:%S')})[+] Active connections: {[c.addr for c in conns]}\n')
+		log_file.write(f"({datetime.today().strftime('%Y-%m-%d %H:%M:%S')})[+] Sucessfully connected to client {client_addr[0]}:{client_addr[1]}\n")
+		log_file.write(f"({datetime.today().strftime('%Y-%m-%d %H:%M:%S')})[+] Active connections: {[c.addr for c in conns]}\n")
 		if active_count() < (cpu_count() - 1):
 			thread = Thread(target=handle_client, args=(client_socket, client_addr))
 			thread.start()
 		else:
 			handle_client(client_socket, client_addr)
 	else:
-		log_file.write(f'({datetime.today().strftime('%Y-%m-%d %H:%M:%S')})[-] Denied connection with client {client_addr[0]}:{client_addr[1]}\n')
+		log_file.write(f"({datetime.today().strftime('%Y-%m-%d %H:%M:%S')})[-] Denied connection with client {client_addr[0]}:{client_addr[1]}\n")
 		client_socket.sendall("HTTP/1.1 429 Too Many Requests\r\n".encode('ascii'))
 		client_socket.close()
-	log_file.write(f'({datetime.today().strftime('%Y-%m-%d %H:%M:%S')})[+] Ended connection with {client_addr[0]}:{client_addr[1]}\n')
+	log_file.write(f"({datetime.today().strftime('%Y-%m-%d %H:%M:%S')})[+] Ended connection with {client_addr[0]}:{client_addr[1]}\n")

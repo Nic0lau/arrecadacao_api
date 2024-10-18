@@ -12,7 +12,7 @@ def check_connection(conn_list, addr):
 		if c.addr == addr:
 			old_t = c.time
 			c.time = time.time()
-			return -1 if (c.time - old_t < 1) else 0
+			return -1 if (c.time - old_t < 0.5) else 0
 	return 1
 def cleanup_old_connections(conn_list):
 	for c in conn_list:
